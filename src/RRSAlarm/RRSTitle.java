@@ -10,9 +10,10 @@ public class RRSTitle implements Comparable <RRSTitle>{
 	int listPosition=-1;
 	int cycle=0;
     int titleWordMatch=0;
+    int topURLUpdate=0;
 	public ArrayList<String> URLs = new ArrayList<String>();
 
-
+    
 
 	public int compareTo(RRSTitle t) {
 		

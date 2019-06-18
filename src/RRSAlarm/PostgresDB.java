@@ -154,6 +154,7 @@ public class PostgresDB {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			init();
 		}
 	}
 	
@@ -181,6 +182,7 @@ public class PostgresDB {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			init();
 		}
 	}
 }

@@ -29,6 +29,7 @@ public class RRSAlarm {
 
 	public static void main(String[] args) {
 		int whileLoop=0;
+		System.out.println("RSS Alarm V3");
 		PropertiesLoader prop = new PropertiesLoader();
 		postgre = new PostgresDB(prop.get("DBURL"), prop.get("DBName"), prop.get("DBUser"), prop.get("DBPasswd"));
 		postgre.init();
@@ -128,7 +129,10 @@ public class RRSAlarm {
 				}
 				for (RRSURL url : container.urls) {
 					if (url.url.equals(t.URLs.get(0))) {
-						urlUpdate = url.updates++;
+						if (urlUpdate < 1000) {
+							urlUpdate = url.updates++;
+						}
+						t.topURLUpdate = urlUpdate;
 					}
 				}
 				log.log("\n### " + t.listPosition + ". " + t.currentHit + addstr + " : " + t.timestamp.toLocaleString()

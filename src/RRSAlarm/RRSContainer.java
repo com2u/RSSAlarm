@@ -92,9 +92,10 @@ public class RRSContainer {
 			if (t.listPosition <= 3) {
 				addstr = "*3";
 			}
-			log.log("\n" + t.listPosition + ". " + t.currentHit + addstr + " : " + t.timestamp.toLocaleString() + "  "
-					+ t.title + " -- URLUpdates" + urlLocal.updates);
 			t.titleWordMatch = addWords(txt);
+			log.log("\n" + t.listPosition + ". " + t.currentHit + addstr + " : " + t.timestamp.toLocaleString() + "  "
+					+ t.title + " -- URLUpdates" + urlLocal.updates+" TitleWordMatch:"+t.titleWordMatch);
+			
 			
 		}
 		this.listPosition++;
