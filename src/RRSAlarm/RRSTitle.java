@@ -11,7 +11,10 @@ public class RRSTitle implements Comparable <RRSTitle>{
 	int cycle=0;
     int titleWordMatch=0;
     int topURLUpdate=0;
-	public ArrayList<String> URLs = new ArrayList<String>();
+    RRSWord wordMostupdatesThisCylce = new RRSWord();
+    RRSWord wordMostupdatesAgv = new RRSWord();
+    public ArrayList<String> URLs = new ArrayList<String>();
+    public ArrayList<RRSWord> words = new ArrayList<RRSWord>();
 
     
 

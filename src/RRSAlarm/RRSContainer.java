@@ -4,18 +4,30 @@ import java.util.ArrayList;
 
 public class RRSContainer {
 
-	public String urlList[] = { "https://www.yahoo.com/news/rss/world", "http://www.tagesschau.de/xml/atom/",
+	public String urlList[] = { "https://www.yahoo.com/news/rss/world", 
+			"http://www.tagesschau.de/xml/atom/",
 			"http://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml",
-			"http://www.spiegel.de/schlagzeilen/eilmeldungen/index.rss", "http://rss.sueddeutsche.de/rss/Topthemen",
-			"http://rss.sueddeutsche.de/rss/Eilmeldungen", "http://www.spiegel.de/schlagzeilen/tops/index.rss",
-			"https://www.welt.de/feeds/latest.rss", "https://www.welt.de/feeds/topnews.rss",
-			"http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", "http://feeds.reuters.com/Reuters/worldNews",
+			"http://www.spiegel.de/schlagzeilen/eilmeldungen/index.rss", 
+			"http://rss.sueddeutsche.de/rss/Topthemen",
+			"http://rss.sueddeutsche.de/rss/Eilmeldungen", 
+			"http://www.spiegel.de/schlagzeilen/tops/index.rss",
+			"https://www.welt.de/feeds/latest.rss", 
+			"https://www.welt.de/feeds/topnews.rss",
+			"http://rss.nytimes.com/services/xml/rss/nyt/HomePage.xml", 
+			"http://feeds.reuters.com/Reuters/worldNews",
 			"https://www.presseportal.de/rss/presseportal.rss2",
-			"https://rss.focus.de/fol/XML/rss_folnews_eilmeldungen.xml", "https://www.t-online.de/themen/rss/",
+			"https://rss.focus.de/fol/XML/rss_folnews_eilmeldungen.xml", 
+			"https://www.t-online.de/themen/rss/",
 			"http://rss.nytimes.com/services/xml/rss/nyt/World.xml",
-			"http://rssfeeds.usatoday.com/usatoday-NewsTopStories", "http://feeds.reuters.com/reuters/topNews",
+			"http://rssfeeds.usatoday.com/usatoday-NewsTopStories", 
+			"http://feeds.reuters.com/reuters/topNews",
 			"https://www.stern.de/feed/standard/all/", "https://www.ad-hoc-news.de/rss/nachrichten.xml",
 			"https://www.aljazeera.com/xml/rss/all.xml", "https://deutsch.rt.com/feeds/news/",
+			"https://news.google.com/rss/topics/CAAqJggKIiBDQkFTRWdvSUwyMHZNRGx1YlY4U0FtVnVHZ0pWVXlnQVAB?hl=en-US&gl=US&ceid=US:en",
+			//"https://www.reddit.com/r/worldnews/.rss",
+			"http://www.globalissues.org/news/feed",
+			"http://feeds.reuters.com/reuters/topNews",
+			"http://feeds.feedburner.com/euronews/en/home/",
 			"https://www.rt.com/rss/" };
 
 	// public RRSTitle title = new RRSTitle();
@@ -27,6 +39,9 @@ public class RRSContainer {
 	public int differentUpdates = 0;
 	public int differentUpdatesOld = 0;
 	public int generalUpdatesOld = 0;
+	public RRSWord wordMostUsedThisCycle = new RRSWord();
+	public RRSWord wordMostUsedAvg = new RRSWord();
+
 	public int avgUpdates = 0;
 	public int cycle = 0;
 	public int listPosition = 1;
@@ -92,11 +107,10 @@ public class RRSContainer {
 			if (t.listPosition <= 3) {
 				addstr = "*3";
 			}
-			t.titleWordMatch = addWords(txt);
+			t.titleWordMatch = addWords(t);
 			log.log("\n" + t.listPosition + ". " + t.currentHit + addstr + " : " + t.timestamp.toLocaleString() + "  "
-					+ t.title + " -- URLUpdates" + urlLocal.updates+" TitleWordMatch:"+t.titleWordMatch);
-			
-			
+					+ t.title + " -- URLUpdates" + urlLocal.updates + " TitleWordMatch:" + t.titleWordMatch);
+
 		}
 		this.listPosition++;
 
@@ -105,7 +119,9 @@ public class RRSContainer {
 	int evaluateWords(String fullTitel) {
 		int count = 0;
 		int noOfWords = 0;
-		for (String word : fullTitel.split(" ")) {
+		String splitter = "\\s|,|\\.|-|:|!|\\?|;|\\(|\\)|\\+|\\&|\\=";
+		for (String word : fullTitel.split(splitter)) {
+			word = word.toLowerCase().trim().replaceAll(splitter,"");
 			noOfWords++;
 			for (RRSWord w : words) {
 				if (w.word.equals(word)) {
@@ -118,7 +134,8 @@ public class RRSContainer {
 	}
 
 	int evaluateWordHit(RRSWord w) {
-		return w.count * w.wordValue + w.updates * w.wordValue;
+		//return w.count * w.wordValue + w.updates * w.wordValue;
+		return w.updates * w.wordValue;
 	}
 
 	void clearWordUpdates() {
@@ -130,34 +147,51 @@ public class RRSContainer {
 				w.updatesOld = 0;
 			}
 			w.titleWordMatchOld = w.titleWordMatch;
+			w.topUpdatesOld = w.topUpdatesThisCylce;
+			w.topUpdatesAvg = 0;
 			w.titleWordMatch = 0;
 			w.updatesThisCylce = 0;
+			w.topUpdatesThisCylce = 0;
 			if (w.updates > 0) {
 				w.updates--;
 			}
 		}
+		this.wordMostUsedThisCycle = new RRSWord();
+		this.wordMostUsedAvg = new RRSWord();
 	}
 
-	void checkWordURLs(RRSWord w) {
+	int checkWordURLs(RRSWord w) {
 		boolean found = false;
 		for (String url : w.URLs) {
 			if (url == CurrentURL) {
 				found = true;
-				break;
+				return 0;
 			}
 		}
 		if (found == false) {
 			w.URLs.add(CurrentURL);
 			w.differentURL++;
+			return w.differentURL;
 		}
-
+		return 0;
 	}
 
-	int addWords(String fullTitel) {
+	RRSWord getWord(String word) {
+		for (RRSWord w : words) {
+			if (w.word.equals(word)) {
+				return w;
+			}
+		}
+		return null;
+	}
+
+	int addWords(RRSTitle titel) {
 		int titleWordMatch = 0;
 		int titleWordMatchValue = 0;
 		RRSWord wordItem = null;
-		for (String word : fullTitel.split(" ")) {
+		String splitter = "\\s|,|\\.|-|:|!|\\?|;|\\(|\\)|\\+|\\&|\\=";
+		for (String word : titel.title.split(splitter)) {
+			word = word.toLowerCase().trim().replaceAll(splitter,"");
 			// System.out.print("#");
 			// System.out.print(word);
 			boolean found = false;
@@ -168,7 +202,14 @@ public class RRSContainer {
 					w.updates++;
 					w.timestamp = new java.util.Date();
 					w.updatesThisCylce++;
-
+					if (titel.count < 3) {
+						if (w.topUpdatesAvg < w.titleWordMatchOld) {
+							w.topUpdatesAvg = w.titleWordMatchOld;
+							w.topUpdatesAvg++;
+						}
+						w.topUpdatesThisCylce++;
+					}
+					titel.words.add(w);
 					checkWordURLs(w);
 					if (w.listPosition < 4) {
 						titleWordMatchValue += w.wordValue;
@@ -206,9 +247,25 @@ public class RRSContainer {
 				words.add(w);
 			}
 		}
+		for (RRSWord w : titel.words) {
+			if (w.wordValue > 2) {
+				if (this.wordMostUsedThisCycle.updatesThisCylce < w.updatesThisCylce) {
+					this.wordMostUsedThisCycle = w;
+				}
+				if (titel.wordMostupdatesThisCylce.updatesThisCylce < w.updatesThisCylce) {
+					titel.wordMostupdatesThisCylce = w;
+				}
+				if (titel.wordMostupdatesAgv.topUpdatesAvg < w.topUpdatesAvg) {
+					titel.wordMostupdatesAgv = w;
+				}
+				if (this.wordMostUsedAvg.topUpdatesAvg < w.topUpdatesAvg) {
+					this.wordMostUsedAvg = w;
+				}
+			}
+		}
 		if (titleWordMatch > 1) {
 			log.log("  titleWordMatchValue:" + titleWordMatchValue + "   titleWordMatch:" + titleWordMatch
-					+ "   topWordMatch:" + (wordItem.titleWordMatch+wordItem.titleWordMatchOld));
+					+ "   topWordMatch:" + (wordItem.titleWordMatch + wordItem.titleWordMatchOld));
 		}
 		log.log(".fine");
 		return titleWordMatch;

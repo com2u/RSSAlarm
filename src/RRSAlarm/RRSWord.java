@@ -8,6 +8,9 @@ public class RRSWord {
 	int updates=0;
 	int updatesOld=0;
 	int updatesThisCylce=0;
+	int topUpdatesThisCylce=0;
+	int topUpdatesOld=0;
+	int topUpdatesAvg=0;
 	int listPosition=999;
 	int titleWordMatch=0;
 	int titleWordMatchOld=0;

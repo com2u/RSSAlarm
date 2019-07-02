@@ -1,5 +1,19 @@
 package RRSAlarm;
 
+/*
+ * 
+ * RRSAlarm
+ *	Main
+ *		InitUrls
+ *				RRSConatiner.AddTitle
+ *					RRSConatiner.AddWords
+ *						RRSConatiner.checkWordURLs
+ *			ListTopTitle
+ *			Wait
+ * 			RRSConatiner.ClearWordUpdates
+ * 	
+ */
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,7 +43,7 @@ public class RRSAlarm {
 
 	public static void main(String[] args) {
 		int whileLoop=0;
-		System.out.println("RSS Alarm V3");
+		System.out.println("RSS Alarm V4");
 		PropertiesLoader prop = new PropertiesLoader();
 		postgre = new PostgresDB(prop.get("DBURL"), prop.get("DBName"), prop.get("DBUser"), prop.get("DBPasswd"));
 		postgre.init();
@@ -64,12 +78,13 @@ public class RRSAlarm {
 					container.differentUpdatesOld = container.generalUpdates;
 				}
 				container.avgUpdates = (container.avgUpdates * 3 + container.generalUpdates) / 4;
-				container.clearWordUpdates();
 				timer = java.util.Calendar.getInstance();
 				
 				log.log("\nSleep... updates:" + container.generalUpdates + "   avg:" + container.avgUpdates
 						+ "   different:" + container.differentUpdates + "  generalWordUpdate:"
-						+ container.generalWordUpdate);
+						+ container.generalWordUpdate
+						+"  wordMostUsedThisCycle.count:"+container.wordMostUsedThisCycle.updatesThisCylce+" = "+container.wordMostUsedThisCycle.word 
+						+"  wordMostUsedAvg.count:"+container.wordMostUsedAvg.topUpdatesAvg+" = "+container.wordMostUsedAvg.word);
 				// not for the for initial cycle
 				if (whileLoop>0) {
 					java.sql.Timestamp sqlDate = new java.sql.Timestamp(new java.util.Date().getTime());
@@ -77,6 +92,12 @@ public class RRSAlarm {
 					postgre.updateDB(sqlDate, "RSSAlaram/avgUpdates", container.avgUpdates+"");
 					postgre.updateDB(sqlDate, "RSSAlaram/differentUpdates", container.differentUpdates+"");
 					postgre.updateDB(sqlDate, "RSSAlaram/generalWordUpdate", container.generalWordUpdate+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/wordMostUsedThisCycle", container.wordMostUsedThisCycle.word+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/wordMostUsedThisCycleCount", container.wordMostUsedThisCycle.updatesThisCylce+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/wordTopThisCycleCount", container.wordMostUsedThisCycle.topUpdatesThisCylce+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/topUpdatesWordAvgCount", container.wordMostUsedAvg.topUpdatesAvg+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/topUpdatesWordAvg", container.wordMostUsedAvg.word+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/topUpdatesCycleAvg", container.wordMostUsedThisCycle.topUpdatesAvg+"");
 					firebaseContainer.put("generalUpdates", ""+container.generalUpdates);
 					firebaseContainer.put("avgUpdates", ""+container.avgUpdates);
 					firebaseContainer.put("differentUpdates", ""+container.differentUpdates);
@@ -85,7 +106,7 @@ public class RRSAlarm {
 					firebaseContainer.clear();
 					listTopTitle(timer);
 				}
-
+				
 				timer.add(java.util.Calendar.getInstance().MINUTE, 5);
 				for (int i = 0; i < 30; i++) {
 					// 10 Seconds
@@ -100,6 +121,7 @@ public class RRSAlarm {
 					}
 				}
 				log.log("\n");
+				container.clearWordUpdates();
 				whileLoop++;
 			}
 		} catch (Exception e) {
@@ -136,14 +158,21 @@ public class RRSAlarm {
 					}
 				}
 				log.log("\n### " + t.listPosition + ". " + t.currentHit + addstr + " : " + t.timestamp.toLocaleString()
-						+ "  " + t.title + " URLs.Count:" + t.URLs.size() + " URLs.Update:" + urlUpdate);
+						+ "  " + t.title + " URLs.Count:" + t.URLs.size() + " URLs.Update:" + t.updates +"  wordMostUsedThisCycle.count:"+t.wordMostupdatesThisCylce.updatesThisCylce+" = "+t.wordMostupdatesThisCylce.word);
 				if (count == 0) {
 					java.sql.Timestamp sqlDate = new java.sql.Timestamp(new java.util.Date().getTime());
 					postgre.updateDB(sqlDate, "RSSAlaram/currentHit", t.currentHit+"");
 					postgre.updateDB(sqlDate, "RSSAlaram/listPosition", t.listPosition+"");
 					postgre.updateDB(sqlDate, "RSSAlaram/URLCount", t.URLs.size()+"");
-					postgre.updateDB(sqlDate, "RSSAlaram/URLUpdate", urlUpdate+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/URLUpdate", t.updates+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/TopURLUpdate", t.topURLUpdate+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/TitleWordMatch", t.titleWordMatch+"");
 					postgre.updateDB(sqlDate, "RSSAlaram/Title", t.title);
+					postgre.updateDB(sqlDate, "RSSAlaram/TopWordThisCycleCount", t.wordMostupdatesThisCylce.updatesThisCylce+"");
+					postgre.updateDB(sqlDate, "RSSAlaram/TopWordThisCycle", t.wordMostupdatesThisCylce.word);
+					postgre.updateDB(sqlDate, "RSSAlaram/TopWordAvg", t.wordMostupdatesAgv.word);
+					postgre.updateDB(sqlDate, "RSSAlaram/TopWordAvgCount", t.wordMostupdatesAgv.topUpdatesAvg+"");
+					
 				}
 				firebaseContainer.put("position", ""+t.listPosition);
 				firebaseContainer.put("currentHit", ""+t.currentHit);
@@ -207,6 +236,7 @@ public class RRSAlarm {
 			updatFailed = false;
 
 		} catch (Exception e) {
+			log.log("ERROR URL:"+url);
 			e.printStackTrace();
 			updatFailed = true;
 		} finally {

@@ -149,7 +149,7 @@ public class PostgresDB {
 			 //stmt.setString(3, sensor);
 			 stmt.setString(3, content);
 			 stmt.executeUpdate();
-			 System.out.println("Updated dataset");
+			 System.out.println("Updated dataset: "+topic+" : "+content);
 	         
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
@@ -177,7 +177,7 @@ public class PostgresDB {
 			 //stmt.setString(3, sensor);
 			 stmt.setString(3, content);
 			 stmt.executeUpdate();
-			 System.out.println("Updated dataset");
+			 System.out.println("Updated dataset: "+topic+" : "+content);
 	         
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
