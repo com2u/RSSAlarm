@@ -1,0 +1,4 @@
+*.jar
+bin/*
+RRSAlarm_lib/*
+log.txt
